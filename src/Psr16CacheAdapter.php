@@ -119,15 +119,7 @@ class Psr16CacheAdapter implements \Psr\SimpleCache\CacheInterface
     {
         \WildWolf\Cache\Validator::validateIterable($keys);
 
-        if (!is_array($keys)) {
-            $k = [];
-            foreach ($keys as $value) {
-                $k[] = $value;
-            }
-
-            $keys = $k;
-        }
-
+        $keys   = self::extractKeys($keys);
         $result = [];
         $values = null;
         try {
@@ -163,18 +155,8 @@ class Psr16CacheAdapter implements \Psr\SimpleCache\CacheInterface
         \WildWolf\Cache\Validator::validateIterable($values);
         \WildWolf\Cache\Validator::validateTtl($ttl);
 
-        $keys = [];
-        $vals = [];
-        foreach ($values as $key => $value) {
-            if (is_int($key) || is_string($key)) {
-                $keys[]     = (string)$key;
-                $vals[$key] = $value;
-            } else {
-                throw new \WildWolf\Cache\InvalidArgumentException();
-            }
-        }
-
-        $values = $vals;
+        $keys = null;
+        self::parseIterable($values, $keys, $values);
 
         $result = true;
         $items  = null;
@@ -207,15 +189,7 @@ class Psr16CacheAdapter implements \Psr\SimpleCache\CacheInterface
     public function deleteMultiple($keys)
     {
         \WildWolf\Cache\Validator::validateIterable($keys);
-
-        if (!is_array($keys)) {
-            $k = [];
-            foreach ($keys as $key) {
-                $k[] = $key;
-            }
-
-            $keys = $k;
-        }
+        $keys = self::extractKeys($keys);
 
         try {
             return $this->psr6->deleteItems($keys);
@@ -245,6 +219,34 @@ class Psr16CacheAdapter implements \Psr\SimpleCache\CacheInterface
             return $this->psr6->hasItem($key);
         } catch (\Psr\Cache\InvalidArgumentException $e) {
             throw new \WildWolf\Cache\InvalidArgumentException();
+        }
+    }
+
+    private static function extractKeys($keys)
+    {
+        if (!is_array($keys)) {
+            $k = [];
+            foreach ($keys as $key) {
+                $k[] = $key;
+            }
+
+            return $k;
+        }
+
+        return $keys;
+    }
+
+    private static function parseIterable($iterable, &$keys, &$vals)
+    {
+        $keys = [];
+        $vals = [];
+        foreach ($iterable as $key => $value) {
+            if (is_int($key) || is_string($key)) {
+                $keys[]     = (string)$key;
+                $vals[$key] = $value;
+            } else {
+                throw new \WildWolf\Cache\InvalidArgumentException();
+            }
         }
     }
 }
