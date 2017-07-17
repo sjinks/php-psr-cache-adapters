@@ -1,0 +1,30 @@
+{
+    "name": "wildwolf/psr-cache-adapters",
+    "description": "PSR-6 to PSR-16 and PSR-16 to PSR-6 Cache Adapters",
+    "keywords": ["cache", "psr6", "psr16", "memory cache"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Volodymyr Kolesnykov",
+            "email": "volodymyr@wildwolf.name",
+            "role": "Developer"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "WildWolf\\": "src/",
+            "WildWolf\\Cache\\": "src/"
+        }
+    },
+    "require": {
+        "psr/cache": "^1.0",
+        "psr/simple-cache": "^1.0",
+        "wildwolf/psr-cache-common": "^1.0"
+    },
+    "require-dev": {
+        "cache/integration-tests": "dev-master",
+        "phpunit/phpunit": "^6.2",
+        "friendsofphp/php-cs-fixer": "^1.0",
+        "wildwolf/psr-memory-cache": "^1.0"
+    }
+}
