@@ -162,7 +162,7 @@ class Psr16CacheAdapter implements \Psr\SimpleCache\CacheInterface
         foreach ($items as $key => $value) {
             $value->set($values[$key]);
             $value->expiresAfter($ttl);
-            $result = $result && $this->psr6->save($value);
+            $result = $this->psr6->save($value) && $result;
         }
 
         return $result;
