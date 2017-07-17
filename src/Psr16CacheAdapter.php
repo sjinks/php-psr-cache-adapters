@@ -18,13 +18,6 @@ class Psr16CacheAdapter implements \Psr\SimpleCache\CacheInterface
         $this->psr6 = $psr6;
     }
 
-    private static function validateTraversable($v)
-    {
-        if (!is_array($v) && !($v instanceof \Traversable)) {
-            throw new \WildWolf\Cache\InvalidArgumentException();
-        }
-    }
-
     /**
      * Fetches a value from the cache.
      *
