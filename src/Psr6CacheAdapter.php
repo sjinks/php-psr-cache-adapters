@@ -47,6 +47,17 @@ class Psr6CacheAdapter implements \Psr\Cache\CacheItemPoolInterface
         }
     }
 
+    private function createItem(string $key, $value) : \WildWolf\Cache\CacheItem
+    {
+        $item = new \WildWolf\Cache\CacheItem($key);
+        if ($value !== null || $this->psr16->has($key)) {
+            $item->setIsHit(true);
+            $item->set($value);
+        }
+
+        return $item;
+    }
+
     /**
      * Returns a traversable set of cache items.
      *
@@ -70,13 +81,7 @@ class Psr6CacheAdapter implements \Psr\Cache\CacheItemPoolInterface
             $items  = $this->psr16->getMultiple($keys, null);
 
             foreach ($items as $key => $value) {
-                $r = new \WildWolf\Cache\CacheItem($key);
-
-                if ($value !== null || $this->psr16->has($key)) {
-                    $r->setIsHit(true);
-                    $r->set($value);
-                }
-
+                $r = $this->createItem($key, $value);
                 unset($items[$key]);
                 $result[$key] = $r;
             }
