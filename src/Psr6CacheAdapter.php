@@ -14,6 +14,17 @@ class Psr6CacheAdapter implements \Psr\Cache\CacheItemPoolInterface
         $this->psr16 = $psr16;
     }
 
+    private function createItem(string $key, $value) : \WildWolf\Cache\CacheItem
+    {
+        $item = new \WildWolf\Cache\CacheItem($key);
+        if ($value !== null || $this->psr16->has($key)) {
+            $item->setIsHit(true);
+            $item->set($value);
+        }
+
+        return $item;
+    }
+
     /**
      * Returns a Cache Item representing the specified key.
      *
@@ -33,29 +44,11 @@ class Psr6CacheAdapter implements \Psr\Cache\CacheItemPoolInterface
     public function getItem($key)
     {
         try {
-            $value  = $this->psr16->get($key, null);
-            $result = new \WildWolf\Cache\CacheItem($key);
-
-            if ($value !== null || $this->psr16->has($key)) {
-                $result->set($value);
-                $result->setIsHit(true);
-            }
-
-            return $result;
+            $value = $this->psr16->get($key, null);
+            return $this->createItem($key, $value);
         } catch (\Psr\SimpleCache\InvalidArgumentException $e) {
             throw new \WildWolf\Cache\InvalidArgumentException();
         }
-    }
-
-    private function createItem(string $key, $value) : \WildWolf\Cache\CacheItem
-    {
-        $item = new \WildWolf\Cache\CacheItem($key);
-        if ($value !== null || $this->psr16->has($key)) {
-            $item->setIsHit(true);
-            $item->set($value);
-        }
-
-        return $item;
     }
 
     /**
