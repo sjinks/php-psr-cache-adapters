@@ -130,10 +130,29 @@ class Psr16CacheAdapter implements \Psr\SimpleCache\CacheInterface
     }
 
     /**
+     * @param array|\Traversable $items
+     * @param array $values
+     * @param null|int|\DateInterval $ttl
+     * @return bool
+     */
+    private function doSetItems($items, array $values, $ttl) : bool
+    {
+        $result = true;
+
+        foreach ($items as $key => $value) {
+            $value->set($values[$key]);
+            $value->expiresAfter($ttl);
+            $result = $this->psr6->save($value) && $result;
+        }
+
+        return $result;
+    }
+
+    /**
      * Persists a set of key => value pairs in the cache, with an optional TTL.
      *
      * @param iterable              $values A list of key => value pairs for a multiple-set operation.
-     * @param null|int|DateInterval $ttl    Optional. The TTL value of this item. If no value is sent and
+     * @param null|int|\DateInterval $ttl    Optional. The TTL value of this item. If no value is sent and
      *                                      the driver supports TTL then the library may set a default value
      *                                      for it or let the driver take care of that.
      *
@@ -145,13 +164,11 @@ class Psr16CacheAdapter implements \Psr\SimpleCache\CacheInterface
      */
     public function setMultiple($values, $ttl = null)
     {
-        \WildWolf\Cache\Validator::validateIterable($values);
         \WildWolf\Cache\Validator::validateTtl($ttl);
 
         $keys = null;
         self::parseIterable($values, $keys, $values);
 
-        $result = true;
         $items  = null;
         try {
             $items = $this->psr6->getItems($keys);
@@ -159,13 +176,7 @@ class Psr16CacheAdapter implements \Psr\SimpleCache\CacheInterface
             throw new \WildWolf\Cache\InvalidArgumentException();
         }
 
-        foreach ($items as $key => $value) {
-            $value->set($values[$key]);
-            $value->expiresAfter($ttl);
-            $result = $this->psr6->save($value) && $result;
-        }
-
-        return $result;
+        return $this->doSetItems($items, $values, $ttl);
     }
 
     /**
@@ -231,6 +242,8 @@ class Psr16CacheAdapter implements \Psr\SimpleCache\CacheInterface
 
     private static function parseIterable($iterable, &$keys, &$vals)
     {
+        \WildWolf\Cache\Validator::validateIterable($iterable);
+
         $keys = [];
         $vals = [];
         foreach ($iterable as $key => $value) {
